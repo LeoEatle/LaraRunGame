@@ -1,4 +1,4 @@
-var game = new Phaser.Game(320,505,Phaser.CANVAS,'game'); //实例化game
+var game = new Phaser.Game(320,505,Phaser.AUTO,'game'); //实例化game
 game.States = {}; //存放state对象
 
 game.States.boot = function(){
@@ -35,8 +35,6 @@ game.States.preload = function(){
     	game.load.image('triangle', 'assets/lara/triangle.png');//障碍
     	game.load.image('star', 'assets/lara/star.png');//星星
     	//game.load.image('cat', 'assets/lara/cat.png');//猫
-    	game.load.spritesheet('eatle', 'assets/lara/eatle.png', 90, 143, 2);//eatle
-    	game.load.image('heart', 'assets/lara/heart.png');//heart
     
     	game.load.spritesheet('lara_run', 'assets/lara/Lara_run.png',90,143,4);//run图像
     	game.load.image('ready', 'assets/lara/lara_run_ready.png');//ready图像
@@ -58,7 +56,6 @@ game.States.menu = function(){
 		var lara = game.add.sprite(0, 250, 'lara_title');//添加laraguichu
 		lara.animations.add('guichu');//鬼畜起来
 		lara.animations.play('guichu', 5, true);//这里5是指频率 true指循环
-		
 		
 		
 		titleGroup.x = 135;
@@ -111,22 +108,15 @@ game.States.play = function(){
 		this.lara.anchor.setTo(0.5, 0.5);
 		game.physics.enable(this.lara,Phaser.Physics.ARCADE); //开启lara的物理系统
 		this.lara.body.gravity.y = 0; //lara的重力
-		game.physics.enable(this.ground	,Phaser.Physics.ARCADE);//地面
+		game.physics.enable(this.ground,Phaser.Physics.ARCADE);//地面
 		this.ground.body.immovable = true; //固定不动
-		
-		this.eatle = game.add.sprite(game.width,300,'eatle'); //eatle
-		this.eatle.anchor.setTo(0.5, 0.5);
-		game.physics.enable(this.eatle,Phaser.Physics.ARCADE); //开启lara的物理系统
-		this.eatle.animations.add('waiting',[0,1]);
-		this.eatle.animations.play('waiting',5,true);
-		this.eatle.body.gravity.x = -this.gameSpeed;
 		var score = 0;
 		var scoreText;
 		var countText;
 		this.scoreText = game.add.text(16, 16, 'Score: 0', {fontSize: '32px', fill: '#ffff'});
 		this.countText = game.add.text(15, 38, 'Count: 0', {fontSize: '32px', fill: '#ffff'});
 
-		this.readyText = game.add.image(190, 0, 'ready'); //get ready 文字
+		this.readyText = game.add.image(150, 0, 'ready'); //get ready 文字
 		this.readyText.anchor.setTo(0.5, 0);
 		this.hasStarted = false; //游戏是否已开始
 		game.time.events.loop(1800, this.generateBlocks, this);//循环产生blocks
@@ -137,43 +127,10 @@ game.States.play = function(){
 	};
 	this.update = function(){
 		if(!this.hasStarted) return; //游戏未开始
-		if(this.score > 1000)
-		{
-			this.ending();
-		}
 		
 		game.physics.arcade.collide(this.lara, this.ground, this.hitGround,null, this);//与地板碰撞
 		game.physics.arcade.overlap(this.lara, this.blockGroup, this.hitBlock, null, this); //与三角碰撞
 		game.physics.arcade.overlap(this.starGroup, this.ground, this.starFall, null, this);//星星撞到地板
-		game.physics.arcade.overlap(this.lara, this.eatle, this.love, null, this); //与三角碰撞
-		
-	}
-	
-	this.ending = function()
-	{
-		this.bg.stopScroll();
-		this.ground.stopScroll();
-		game.input.onDown.remove(this.jump,this);
-		game.time.events.stop(true);
-		this.blockGroup.forEachExists(function(block){
-			block.destroy();
-		}, this);
-		this.starGroup.forEachExists(function(star){
-			star.destroy();
-		});
-		this.lara.body.velocity.x = this.gameSpeed;
-		this.lara.animations.stop('run', 0);
-		
-//		game.physics.enable(this.eatle,Phaser.Physics.ARCADE); //开启lara的物理系统
-		
-		
-	}
-	
-	this.love = function()
-	{
-		this.eatle.animations.stop('waiting', 1)
-		this.heart = game.add.image(190, 0, 'heart'); //heart出现
-		game.time.events.add(Phaser.Timer.SECOND * 3, this.showGameOverText(), this);
 	}
 
 	this.statrGame = function(){
@@ -213,7 +170,7 @@ game.States.play = function(){
 		}, this);
 		this.starGroup.forEachExists(function(star){
 			star.body.velocity.y = 0;
-		});
+		})
 		this.lara.animations.stop('run', 0);
 		game.input.onDown.remove(this.jump,this);
 		game.time.events.stop(true);
@@ -345,8 +302,6 @@ game.States.play = function(){
 		this.gameSpeed = 800;//开始加速
 		this.lara.animations.stop('run', 2);//让lara暴走
 		this.lara.frame = 3;
-		this.bg.autoScroll(-(this.gameSpeed/10),0);
-		this.ground.autoScroll(-this.gameSpeed,0);
 		//持续7秒钟
 		game.time.events.add(Phaser.Timer.SECOND * 7, this.stopbaozou, this);
 		
@@ -358,8 +313,6 @@ game.States.play = function(){
 		console.log('bao zou ting zhi');
 		this.baozouText.destroy();
 		this.gameSpeed = 200;
-		this.bg.autoScroll(-(this.gameSpeed/10),0);
-		this.ground.autoScroll(-this.gameSpeed,0);
 		this.lara.animations.play('run', 5, true);
 		this.baozouState = false;
 		//重新计算countstar
